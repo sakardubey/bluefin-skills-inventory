@@ -1,0 +1,687 @@
+<title>Bluefin Skills Inventory</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: deep-sea hero band with stats and pill tabs; below it, roster cards, then ranked need cards. Evidence opens in a dialog. */
+:root {
+  --bg: #eef3f6; --surface: #ffffff; --surface-2: #f6f9fb; --ink: #0c1f2b; --muted: #587080; --line: #d5e0e6;
+  --accent: #0f78b8; --accent-2: #19b3a6; --accent-soft: #e0eff8;
+  --sea-1: #061a27; --sea-2: #0b3550; --sea-3: #0f5f7f; --sea-ink: #eaf6fb; --sea-muted: #9cc3d6; --fin: #6fe0d2;
+  --l1: #cfe6f3; --l2: #5fa9d8; --l3: #0f78b8; --l1-ink: #0c1f2b; --l2-ink: #04131d; --l3-ink: #ffffff;
+  --ok: #16825a; --ok-soft: #dcf3e8; --warn: #b05a10; --warn-soft: #fbead8; --bad: #c0362c; --bad-soft: #fbe2df;
+  --shadow: 0 1px 2px rgb(12 31 43 / .06), 0 8px 24px -12px rgb(12 31 43 / .18);
+  --av1: #0f78b8; --av2: #19a397; --av3: #6d5bd0; --av4: #d0602c; --av5: #2c8a3f;
+  --f-display: "Unbounded", "Segoe UI", system-ui, sans-serif;
+  --f-body: "Instrument Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #071219; --surface: #0e1d27; --surface-2: #122532; --ink: #e2eef4; --muted: #8fa9b8; --line: #1f3544;
+  --accent: #5cb8f0; --accent-2: #4fd6c8; --accent-soft: #123048;
+  --l1: #1b3a50; --l2: #2f7fb3; --l3: #7cc8f5; --l1-ink: #e2eef4; --l2-ink: #ffffff; --l3-ink: #04131d;
+  --ok: #5fd39c; --ok-soft: #10301f; --warn: #f0a862; --warn-soft: #36240f; --bad: #f58a80; --bad-soft: #3a1a17;
+  --shadow: 0 1px 2px rgb(0 0 0 / .3), 0 10px 28px -14px rgb(0 0 0 / .6);
+  color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #071219; --surface: #0e1d27; --surface-2: #122532; --ink: #e2eef4; --muted: #8fa9b8; --line: #1f3544;
+  --accent: #5cb8f0; --accent-2: #4fd6c8; --accent-soft: #123048;
+  --l1: #1b3a50; --l2: #2f7fb3; --l3: #7cc8f5; --l1-ink: #e2eef4; --l2-ink: #ffffff; --l3-ink: #04131d;
+  --ok: #5fd39c; --ok-soft: #10301f; --warn: #f0a862; --warn-soft: #36240f; --bad: #f58a80; --bad-soft: #3a1a17;
+  --shadow: 0 1px 2px rgb(0 0 0 / .3), 0 10px 28px -14px rgb(0 0 0 / .6);
+  color-scheme: dark; }
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.55 var(--f-body); }
+.inner { max-width: 1200px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1, h2, h3 { margin: 0; line-height: 1.15; text-wrap: balance; }
+h1, h2 { font-family: var(--f-display); font-weight: 700; letter-spacing: -.01em; }
+h2 { font-size: 1.15rem; }
+h3 { font-size: 1rem; font-weight: 700; }
+p { margin: 0; }
+.mono { font-family: var(--f-mono); font-size: .82em; }
+.muted { color: var(--muted); }
+.label { font-size: .7rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); font-weight: 700; }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--accent-2); outline-offset: 2px; }
+
+/* ---------- Hero ---------- */
+.hero { position: relative; overflow: hidden; color: var(--sea-ink);
+  background: radial-gradient(1200px 500px at 85% -20%, var(--sea-3), transparent 60%), linear-gradient(160deg, var(--sea-2), var(--sea-1) 70%); }
+.hero canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; opacity: .55; }
+.hero .inner { position: relative; padding-block: 36px 0; }
+.eyebrow { display: inline-flex; gap: 8px; align-items: center; font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; font-weight: 700; color: var(--fin); }
+.eyebrow::before { content: ""; width: 22px; height: 2px; background: var(--fin); border-radius: 2px; }
+.hero h1 { font-size: clamp(1.9rem, 5.2vw, 3.3rem); margin-top: 10px; max-width: 16ch; }
+.hero h1 em { font-style: normal; color: var(--fin); }
+.hero .sub { color: var(--sea-muted); margin-top: 12px; max-width: 60ch; }
+.due { display: inline-flex; align-items: center; gap: 8px; margin-top: 18px; padding: 6px 12px 6px 8px; border-radius: 999px;
+  background: rgb(255 255 255 / .08); border: 1px solid rgb(255 255 255 / .14); font-size: .85rem; }
+.due b { background: var(--fin); color: var(--sea-1); border-radius: 999px; padding: 2px 9px; font-size: .75rem; }
+.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; margin-top: 28px; border-radius: 14px; overflow: hidden;
+  background: rgb(255 255 255 / .1); border: 1px solid rgb(255 255 255 / .1); }
+.stat { background: rgb(6 26 39 / .55); padding: 14px 16px; }
+.stat b { display: block; font-family: var(--f-display); font-size: 1.6rem; font-variant-numeric: tabular-nums; color: #fff; }
+.stat span { font-size: .78rem; color: var(--sea-muted); }
+@media (max-width: 560px) { .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+nav.tabs { display: flex; gap: 6px; flex-wrap: wrap; padding-block: 22px 20px; }
+nav.tabs a { padding: 8px 16px; border-radius: 999px; color: var(--sea-muted); text-decoration: none; font-weight: 600; font-size: .92rem;
+  border: 1px solid rgb(255 255 255 / .12); transition: background .15s, color .15s; }
+nav.tabs a:hover { color: #fff; background: rgb(255 255 255 / .08); }
+nav.tabs a[aria-current="page"] { background: var(--fin); color: var(--sea-1); border-color: var(--fin); }
+.wave { display: block; width: 100%; height: 28px; margin-bottom: -1px; }
+.wave path { fill: var(--bg); }
+
+main.inner { padding-block: 20px 72px; }
+.stack { display: grid; gap: 28px; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px; box-shadow: var(--shadow); }
+.section-head { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: baseline; justify-content: space-between; margin-bottom: 14px; }
+
+/* ---------- Roster ---------- */
+.roster { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+@media (max-width: 900px) { .roster { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .roster { grid-template-columns: 1fr; } }
+.role { position: relative; text-align: left; font: inherit; color: inherit; cursor: pointer; display: grid; gap: 12px; align-content: start;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; box-shadow: var(--shadow); overflow: hidden; }
+.role::after { content: ""; position: absolute; inset: 0 0 auto; height: 3px; background: linear-gradient(90deg, var(--accent), var(--accent-2)); }
+.role-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.who-row { display: flex; gap: 12px; align-items: center; min-width: 0; }
+.who-row > div { min-width: 0; }
+.who-row b { display: block; font-size: 1.05rem; }
+.who-row small { color: var(--muted); }
+.av { flex: none; width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; font-weight: 700; color: #fff; font-size: .9rem; letter-spacing: .02em; }
+.role .foot { font-size: .82rem; color: var(--muted); border-top: 1px dashed var(--line); padding-top: 10px; }
+@media (prefers-reduced-motion: no-preference) {
+  .role, .need, .rank button, .cell { transition: transform .18s ease, box-shadow .18s ease, background .15s; }
+  .role:hover, .need:hover { transform: translateY(-3px); box-shadow: 0 2px 4px rgb(12 31 43 / .08), 0 18px 34px -16px rgb(12 31 43 / .35); }
+  .roster .role { animation: rise .5s ease both; }
+  .roster .role:nth-child(2) { animation-delay: .05s } .roster .role:nth-child(3) { animation-delay: .1s }
+  .roster .role:nth-child(4) { animation-delay: .15s } .roster .role:nth-child(5) { animation-delay: .2s } .roster .role:nth-child(6) { animation-delay: .25s }
+  @keyframes rise { from { transform: translateY(8px); } to { transform: none; } }
+}
+
+.meter { display: inline-flex; gap: 3px; align-items: center; }
+.meter i { width: 14px; height: 6px; border-radius: 3px; background: var(--line); }
+.meter.m1 i:nth-child(-n+1), .meter.m2 i:nth-child(-n+2), .meter.m3 i:nth-child(-n+3) { background: linear-gradient(90deg, var(--accent), var(--accent-2)); }
+
+.brief2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); gap: 14px; }
+@media (max-width: 860px) { .brief2 { grid-template-columns: 1fr; } }
+.bullets { margin: 10px 0 0; padding-left: 1.1rem; display: grid; gap: 7px; }
+.bullets li::marker { color: var(--accent-2); }
+.hard { display: grid; gap: 10px; margin-top: 12px; }
+.hard button { all: unset; cursor: pointer; display: grid; grid-template-columns: 42px minmax(0, 1fr); gap: 12px; padding: 10px; border-radius: 10px; }
+.hard button:hover { background: var(--surface-2); }
+.hard button:focus-visible { outline: 2px solid var(--accent-2); }
+.hard b { display: block; }
+.hard p { font-size: .88rem; color: var(--muted); margin-top: 2px; }
+
+/* ---------- Need cards ---------- */
+.needs { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 14px; }
+@media (max-width: 420px) { .needs { grid-template-columns: 1fr; } }
+.need h3 { font-size: 1.05rem; margin-top: 2px; }
+.rank { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 2px; }
+.rank li { min-width: 0; }
+.rank button { width: 100%; display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 10px; align-items: center;
+  text-align: left; background: none; border: 0; border-radius: 10px; padding: 7px 8px; color: inherit; font: inherit; cursor: pointer; }
+.rank button:hover { background: var(--surface-2); }
+.rank .av { width: 34px; height: 34px; border-radius: 10px; font-size: .75rem; }
+.rank li:first-child .av { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent-2); }
+.rank .who { min-width: 0; }
+.rank .who b { font-weight: 600; }
+.rank .tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 3px; }
+.rank li.off button { opacity: .55; }
+.empty { color: var(--muted); font-style: italic; margin-top: 10px; }
+
+.lvl { display: inline-flex; align-items: center; justify-content: center; min-width: 2rem; height: 1.6rem; padding: 0 6px; border-radius: 7px; font-weight: 700; font-variant-numeric: tabular-nums; font-size: .82rem; }
+.lvl.l1 { background: var(--l1); color: var(--l1-ink); }
+.lvl.l2 { background: var(--l2); color: var(--l2-ink); }
+.lvl.l3 { background: var(--l3); color: var(--l3-ink); }
+.chip { display: inline-block; font-size: .7rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); white-space: nowrap; }
+.chip.ok { background: var(--ok-soft); color: var(--ok); }
+.chip.warn { background: var(--warn-soft); color: var(--warn); }
+.chip.bad { background: var(--bad-soft); color: var(--bad); }
+.chip.plain { background: transparent; color: var(--muted); border: 1px solid var(--line); }
+
+/* ---------- Matrix ---------- */
+.legend { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; margin-bottom: 14px; font-size: .85rem; color: var(--muted); }
+.legend span { display: inline-flex; gap: 6px; align-items: center; }
+.scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); box-shadow: var(--shadow); }
+table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+table.matrix th, table.matrix td { border-bottom: 1px solid var(--line); padding: 0; text-align: center; }
+table.matrix tbody tr:hover th, table.matrix tbody tr:hover td { background: var(--surface-2); }
+table.matrix thead th { font-size: .74rem; font-weight: 600; color: var(--muted); vertical-align: bottom; padding: 8px 2px; }
+table.matrix thead th.vert { height: 150px; white-space: nowrap; }
+table.matrix thead th.vert span { writing-mode: vertical-rl; transform: rotate(180deg); display: inline-block; }
+table.matrix thead tr.grp th { font-size: .66rem; text-transform: uppercase; letter-spacing: .1em; border-left: 1px solid var(--line); padding: 10px 4px 0; color: var(--accent); }
+table.matrix th.person { position: sticky; left: 0; background: var(--surface); text-align: left; padding: 6px 12px; white-space: nowrap; font-weight: 600; z-index: 1; border-right: 1px solid var(--line); }
+table.matrix th.person small { display: block; color: var(--muted); font-weight: 400; font-size: .74rem; }
+table.matrix td.gs { border-left: 1px solid var(--line); }
+.cell { width: 38px; height: 38px; border: 0; background: none; cursor: pointer; font: inherit; color: inherit; padding: 0; display: grid; place-items: center; border-radius: 8px; }
+.cell:hover { background: var(--accent-soft); transform: scale(1.12); }
+.cell .lvl { min-width: 1.65rem; height: 1.65rem; }
+.lvl.lowc { outline: 2px dashed var(--muted); outline-offset: -2px; background: transparent; color: var(--ink); }
+.mark { font-weight: 700; font-size: .9rem; }
+.mark.x { color: var(--bad); } .mark.q { color: var(--warn); }
+tr.onleave th.person { color: var(--muted); }
+
+/* ---------- Register ---------- */
+.filters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.filters button { font: inherit; font-size: .85rem; font-weight: 600; padding: 6px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; }
+.filters button[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+.counts { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 18px; }
+.count { padding: 14px 16px; position: relative; overflow: hidden; }
+.count b { display: block; font-family: var(--f-display); font-size: 1.7rem; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.count.ok b { color: var(--ok); } .count.bad b { color: var(--bad); } .count.warn b { color: var(--warn); } .count.acc b { color: var(--accent); }
+table.plain th, table.plain td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+table.plain th { font-size: .7rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 700; background: var(--surface-2); }
+table.plain td button { font: inherit; font-weight: 600; background: none; border: 0; color: var(--accent); cursor: pointer; padding: 0; text-align: left; }
+
+/* ---------- Sources ---------- */
+.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+.two > * { min-width: 0; }
+
+/* ---------- Health ---------- */
+.status-pill { display: inline-flex; align-items: center; gap: 8px; margin: 18px 0 0 8px; padding: 6px 14px; border-radius: 999px; font-size: .85rem; font-weight: 600;
+  text-decoration: none; border: 1px solid rgb(255 255 255 / .14); background: rgb(255 255 255 / .08); color: var(--sea-ink); }
+.status-pill::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--sea-muted); }
+.status-pill.ok::before { background: #4be3a1; box-shadow: 0 0 0 4px rgb(75 227 161 / .2); }
+.status-pill.bad::before { background: #ff7a6e; box-shadow: 0 0 0 4px rgb(255 122 110 / .2); }
+.verdict { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; }
+.verdict .big { width: 64px; height: 64px; border-radius: 18px; display: grid; place-items: center; font-size: 1.9rem; font-weight: 700; flex: none; }
+.verdict .big.ok { background: var(--ok-soft); color: var(--ok); } .verdict .big.bad { background: var(--bad-soft); color: var(--bad); }
+.checks { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 2px; }
+.checks li { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 10px; padding: 9px 4px; border-top: 1px solid var(--line); }
+.checks .tick { width: 22px; height: 22px; border-radius: 7px; display: grid; place-items: center; font-size: .78rem; font-weight: 700; }
+.checks .tick.ok { background: var(--ok-soft); color: var(--ok); } .checks .tick.bad { background: var(--bad-soft); color: var(--bad); } .checks .tick.warn { background: var(--warn-soft); color: var(--warn); }
+.checks small { display: block; color: var(--muted); }
+.sheet-bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 12px 0 14px; }
+.sheet-bar select, .sheet-bar button { font: inherit; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); }
+.sheet-bar button { cursor: pointer; font-weight: 600; background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.sheet-bar .done { color: var(--ok); font-size: .85rem; font-weight: 600; }
+.why-line { font-size: .86rem; line-height: 1.45; }
+.why-line b { display: inline-block; font-size: .68rem; text-transform: uppercase; letter-spacing: .08em; color: var(--accent); margin-right: 4px; }
+.why-box { font-size: .88rem; margin: -2px 0 10px; padding: 8px 12px; border-radius: 8px; background: var(--accent-soft); }
+.why-box b { color: var(--accent); }
+.srcview { display: grid; gap: 14px; margin-top: 18px; }
+.srcview h3 { font-size: 1rem; }
+.rule-box { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: .85rem; padding: 10px 14px; border-radius: 10px; background: var(--surface-2); border: 1px solid var(--line); }
+.rule-box b { color: var(--accent); }
+.srcview details { border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.srcview summary { cursor: pointer; padding: 12px 14px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-weight: 600; }
+.srcview summary .muted { font-weight: 400; font-size: .85rem; }
+.srcview .src-list { list-style: none; margin: 0; padding: 0 14px 14px; display: grid; gap: 10px; }
+.srcview .src-list li { display: grid; grid-template-columns: 7rem minmax(0, 1fr); gap: 10px; border-top: 1px dashed var(--line); padding-top: 10px; }
+@media (max-width: 480px) { .srcview .src-list li { grid-template-columns: 1fr; gap: 2px; } }
+.srcview .meta { font-size: .8rem; color: var(--muted); }
+.srcview .quote { font-size: .9rem; }
+.srcview mark { background: var(--warn-soft); color: var(--ink); padding: 0 2px; border-radius: 3px; }
+td.blank { min-width: 7rem; color: var(--muted); font-style: italic; }
+textarea.copy { width: 100%; min-height: 8rem; font: .8rem/1.5 var(--f-mono); margin-top: 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); padding: 10px; }
+
+/* ---------- Dialog ---------- */
+dialog { border: 1px solid var(--line); border-radius: 18px; padding: 0; width: min(740px, calc(100vw - 32px)); max-height: calc(100vh - 48px); background: var(--surface); color: var(--ink); box-shadow: 0 30px 80px -20px rgb(0 0 0 / .5); }
+dialog::backdrop { background: rgb(4 16 24 / .55); backdrop-filter: blur(3px); }
+.dlg-head { position: sticky; top: 0; z-index: 2; color: var(--sea-ink); padding: 20px 20px 16px; display: flex; gap: 12px; justify-content: space-between; align-items: start;
+  background: linear-gradient(160deg, var(--sea-2), var(--sea-1)); }
+.dlg-head .label { color: var(--sea-muted); }
+.dlg-head h2 { font-size: 1.4rem; margin-top: 2px; }
+.dlg-body { padding: 18px 20px 24px; display: grid; gap: 18px; }
+.close { font: inherit; font-weight: 600; border: 1px solid rgb(255 255 255 / .25); background: rgb(255 255 255 / .08); color: var(--sea-ink); border-radius: 999px; padding: 5px 14px; cursor: pointer; }
+.close:hover { background: rgb(255 255 255 / .16); }
+.skill-block { border: 1px solid var(--line); border-radius: 12px; padding: 14px; }
+.skill-block.focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.skill-block header { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 10px; }
+.ev { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.ev li { display: grid; grid-template-columns: 6.5rem minmax(0, 1fr); gap: 10px; }
+@media (max-width: 480px) { .ev li { grid-template-columns: 1fr; gap: 2px; } }
+.ev .src { font-size: .8rem; color: var(--muted); }
+.ev blockquote { margin: 6px 0 0; padding: 8px 12px; border-radius: 0 8px 8px 0; border-left: 3px solid var(--accent-2); background: var(--surface-2); color: var(--ink); font-size: .9rem; }
+.ev details summary { cursor: pointer; color: var(--accent); font-size: .85rem; margin-top: 4px; }
+.ev pre { white-space: pre-wrap; font: .8rem/1.55 var(--f-mono); background: var(--surface-2); padding: 12px; border-radius: 8px; margin: 6px 0 0; }
+</style>
+
+<header class="hero">
+  <canvas id="sonar" aria-hidden="true"></canvas>
+  <div class="inner">
+    <span class="eyebrow">Bluefin Insights · Halcyon Bank bid</span>
+    <h1>Who can <em>actually</em> do the work?</h1>
+    <p class="sub">A live skills inventory built from project notes and three months of team chat, not the 2024 form. Every level links to its proof.</p>
+    <span class="due"><b>DUE</b> Bid team names by Friday 2 October</span><a class="status-pill" id="status-pill" href="#health">Running checks…</a>
+    <div class="stats" id="stats"></div>
+    <nav class="tabs" aria-label="Views">
+      <a href="#finder">Team finder</a>
+      <a href="#matrix">Skills matrix</a>
+      <a href="#register">Register check</a>
+      <a href="#sources">What it reads</a>
+      <a href="#health">Health check</a>
+    </nav>
+  </div>
+  <svg class="wave" viewBox="0 0 1440 28" preserveAspectRatio="none" aria-hidden="true"><path d="M0 28V14c120-10 240-14 360-8s240 16 360 14 240-14 360-16 240 8 360 10v14z"/></svg>
+</header>
+
+<main class="inner">
+  <section id="v-finder" class="stack"></section>
+  <section id="v-matrix" hidden></section>
+  <section id="v-register" hidden></section>
+  <section id="v-sources" class="stack" hidden></section>
+  <section id="v-health" class="stack" hidden></section>
+</main>
+
+<dialog id="dlg" aria-labelledby="dlg-title">
+  <div class="dlg-head"><div id="dlg-title-wrap"></div><button class="close" id="dlg-close">Close</button></div>
+  <div class="dlg-body" id="dlg-body"></div>
+</dialog>
+
+<script type="application/json" id="data">__DATA__</script>
+<script>
+(function () {
+  const D = JSON.parse(document.getElementById('data').textContent);
+  const P = Object.fromEntries(D.people.map(p => [p.name, p]));
+  const LV = { 1: 'Basic', 2: 'Working', 3: 'Expert' };
+  const CONF = { High: 3, Medium: 2, Low: 1 };
+  const KIND = { led: ['Led', 'ok'], did: ['Did it', 'ok'], reviewed: ['Reviewed others', 'ok'], taught: ['Taught', 'ok'],
+    learning: ['Learning', 'plain'], claim: ['Claim only', 'warn'], contradicts: ['Contradicts', 'bad'], modest: ['Undersells', 'plain'] };
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const skillOf = (p, s) => p.skills.find(x => x.skill === s);
+  const proofCount = x => x.evidence.filter(e => !['claim', 'contradicts', 'modest'].includes(e.kind)).length;
+  const score = x => x && x.level ? x.level * 10 + CONF[x.confidence] + Math.min(proofCount(x), 9) / 10 : 0;
+  const lvl = (x, extra = '') => `<span class="lvl l${x.level} ${extra}" title="${LV[x.level]}${x.confidence ? ', ' + x.confidence + ' confidence' : ''}">${x.level}</span>`;
+  const meter = n => `<span class="meter m${n}" title="${LV[n]}"><i></i><i></i><i></i></span>`;
+  const fmtDate = ts => new Date(ts.replace(' ', 'T')).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  const initials = n => n.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+  const avColor = n => `var(--av${[...n].reduce((a, c) => a + c.charCodeAt(0), 0) % 5 + 1})`;
+  const av = n => `<span class="av" style="background:${avColor(n)}">${esc(initials(n))}</span>`;
+
+  // The tool's own reason for a level: the strongest piece of proof (highest level, project notes first).
+  const KLV = { led: 3, reviewed: 3, taught: 3, did: 2, learning: 1 };
+  const WORD = { led: 'Led', reviewed: 'Reviewed', taught: 'Taught', did: 'Did', learning: 'Learning' };
+  function why(x) {
+    if (!x.level) {
+      const c = x.evidence.find(e => e.kind === 'contradicts') || x.evidence[0];
+      return { word: x.status === 'contradicted' ? 'Contradicted' : 'Claim only', ref: c.ref, text: c.note };
+    }
+    const best = x.evidence.filter(e => e.kind in KLV)
+      .sort((a, b) => ((b.helped ? 1 : KLV[b.kind]) - (a.helped ? 1 : KLV[a.kind])) || (b.ref.endsWith('.md') - a.ref.endsWith('.md')))[0];
+    return { word: best.helped ? 'Helped' : WORD[best.kind], ref: best.ref, text: best.note };
+  }
+  const whyText = x => { const w = why(x); return `${w.word}: ${w.text} (${w.ref})`; };
+
+  function personTags(p) {
+    const t = [];
+    if (!p.available) t.push('<span class="chip warn">On leave</span>');
+    if (p.flags.some(f => f.kind === 'contradicts')) t.push('<span class="chip bad">Took credit</span>');
+    if (p.flags.some(f => f.kind === 'modest')) t.push('<span class="chip plain">Undersells</span>');
+    if (p.flags.some(f => f.kind === 'claim')) t.push('<span class="chip warn">Talk ≠ evidence</span>');
+    if (p.questions.length && p.available) t.push('<span class="chip plain">Open question</span>');
+    return t.join('');
+  }
+  function ranked(skill) {
+    return D.people.map(p => ({ p, x: skillOf(p, skill) })).filter(r => r.x && r.x.level)
+      .sort((a, b) => (b.p.available - a.p.available) || (score(b.x) - score(a.x)));
+  }
+
+  /* ---------- Hero stats ---------- */
+  const proven = D.people.reduce((n, p) => n + p.skills.filter(x => x.level).length, 0);
+  document.getElementById('stats').innerHTML = [
+    [D.counts.people, 'current staff'], [proven, 'skills with proof'],
+    [D.counts.notes + D.counts.messagesRead, 'notes and messages read'], [D.needs.length, 'Halcyon needs']
+  ].map(([n, t]) => `<div class="stat"><b>${n}</b><span>${t}</span></div>`).join('');
+
+  /* ---------- Team finder ---------- */
+  function renderFinder() {
+    const picks = D.needs.map(n => ({ n, top: ranked(n.skill).filter(r => r.p.available) }));
+    const team = new Set(picks.map(r => r.top[0] && r.top[0].p.name).filter(Boolean));
+    const roster = picks.map(({ n, top }) => {
+      const first = top[0], second = top[1];
+      if (!first) return `<div class="role"><span class="label">${esc(n.need)}</span><span class="chip bad">Nobody with evidence</span></div>`;
+      const tie = second && score(second.x) === score(first.x);
+      return `<button class="role" data-person="${esc(first.p.name)}" data-skill="${esc(n.skill)}">
+        <div class="role-top"><span class="label">${esc(n.need)}</span>${meter(first.x.level)}</div>
+        <div class="who-row">${av(first.p.name)}<div><b>${esc(first.p.name)}</b><small>${esc(first.p.role)}</small></div></div>
+        <div class="why-line"><b>${esc(why(first.x).word)}</b> ${esc(why(first.x).text)}</div>
+        <div class="foot">${LV[first.x.level]} · ${first.x.confidence} confidence<br>${second
+          ? `${tie ? 'Tied with' : 'Backup'}: <b style="color:var(--ink)">${esc(second.p.name)}</b> (${LV[second.x.level]})`
+          : '<span class="chip warn">No backup with evidence</span>'}</div></button>`;
+    }).join('');
+    const brief = `
+      <div>
+        <div class="section-head"><h2>Suggested bid team · ${team.size} people</h2>
+          <span class="muted" style="font-size:.85rem">Top available name per need, by level, then confidence, then evidence. Meera decides.</span></div>
+        <div class="roster">${roster}</div>
+      </div>
+      <div class="brief2">
+        <div class="panel"><span class="label">Before you decide</span>
+          <ul class="bullets">${D.brief.cautions.map(c => `<li>${esc(c)}</li>`).join('')}</ul></div>
+        <div class="panel"><span class="label">Hardest to judge</span>
+          <div class="hard">${D.brief.hardest.map(h => `<button data-person="${esc(h.name)}">${av(h.name)}<span><b>${esc(h.name)}</b><p>${esc(h.why)}</p></span></button>`).join('')}</div></div>
+      </div>`;
+    const cards = D.needs.map(n => {
+      const rows = ranked(n.skill);
+      const list = rows.length ? `<ol class="rank">${rows.map(r => `
+        <li class="${r.p.available ? '' : 'off'}"><button data-person="${esc(r.p.name)}" data-skill="${esc(n.skill)}">
+          ${av(r.p.name)}
+          <span class="who"><b>${esc(r.p.name)}</b> <span class="muted" style="font-size:.82rem">${esc(r.p.role)}</span>
+            <span class="tags"><span class="chip plain">${r.x.confidence} confidence</span>${personTags(r.p)}</span></span>
+          ${lvl(r.x)}</button></li>`).join('')}</ol>` : '<p class="empty">Nobody has evidence for this yet.</p>';
+      const claims = D.people.filter(p => { const x = skillOf(p, n.skill); return x && !x.level; });
+      return `<article class="panel need"><span class="label">${esc(n.skill)}</span><h3>${esc(n.need)}</h3>${list}
+        ${claims.length ? `<p class="muted" style="font-size:.8rem;margin-top:10px">Claimed or contradicted, not counted: ${claims.map(p => esc(p.name)).join(', ')}</p>` : ''}</article>`;
+    }).join('');
+    document.getElementById('v-finder').innerHTML = brief + `<div><div class="section-head"><h2>Every name, by need</h2></div><div class="needs">${cards}</div></div>`;
+  }
+
+  /* ---------- Matrix ---------- */
+  function renderMatrix() {
+    const order = [...D.people].sort((a, b) => a.team.localeCompare(b.team) || a.name.localeCompare(b.name));
+    const head1 = '<tr class="grp"><th class="person"></th>' + D.groups.map(([g, s]) => `<th colspan="${s.length}">${esc(g)}</th>`).join('') + '</tr>';
+    const head2 = '<tr><th class="person">Person</th>' + D.groups.map(([, s]) => s.map((k, i) => `<th class="vert ${i === 0 ? 'gs' : ''}"><span>${esc(k)}</span></th>`).join('')).join('') + '</tr>';
+    const body = order.map(p => '<tr class="' + (p.available ? '' : 'onleave') + '"><th class="person">' + esc(p.name) + `<small>${esc(p.team)}${p.available ? '' : ' · on leave'}</small></th>` +
+      D.groups.map(([, s]) => s.map((k, i) => {
+        const x = skillOf(p, k); let inner = '';
+        if (x && x.level) inner = lvl(x, x.confidence === 'Low' ? 'lowc' : '');
+        else if (x && x.status === 'contradicted') inner = '<span class="mark x" title="Contradicted">✕</span>';
+        else if (x) inner = '<span class="mark q" title="Claimed, no proof">?</span>';
+        const cls = i === 0 ? 'gs' : '';
+        return x ? `<td class="${cls}"><button class="cell" data-person="${esc(p.name)}" data-skill="${esc(k)}" aria-label="${esc(p.name)}, ${esc(k)}">${inner}</button></td>` : `<td class="${cls}"></td>`;
+      }).join('')).join('') + '</tr>').join('');
+    document.getElementById('v-matrix').innerHTML = `
+      <div class="legend">
+        <span>${lvl({ level: 1 })} Basic</span><span>${lvl({ level: 2 })} Working</span><span>${lvl({ level: 3 })} Expert</span>
+        <span><span class="lvl l2 lowc">2</span> Low confidence</span>
+        <span><span class="mark q">?</span> Claimed only</span><span><span class="mark x">✕</span> Contradicted</span>
+        <span>Click any cell to see its proof.</span></div>
+      <div class="scroll"><table class="matrix"><thead>${head1}${head2}</thead><tbody>${body}</tbody></table></div>`;
+  }
+
+  /* ---------- Register check ---------- */
+  const RES = { confirmed: ['Confirmed', 'ok'], contradicted: ['Contradicted', 'bad'], unverified: ['No evidence', 'warn'],
+    new: ['Found, not in register', 'acc'], left: ['Left the company', 'plain'], 'not tracked': ['Not one of the 20 skills', 'plain'] };
+  let regFilter = 'all';
+  function renderRegister() {
+    const rows = D.register;
+    const n = k => rows.filter(r => r.result === k).length;
+    const counts = ['confirmed', 'contradicted', 'unverified', 'new', 'left'].map(k =>
+      `<div class="panel count ${RES[k][1]}"><b>${n(k)}</b><span class="muted" style="font-size:.85rem">${RES[k][0]}</span></div>`).join('');
+    const keys = ['all', 'confirmed', 'contradicted', 'unverified', 'new', 'left', 'not tracked'];
+    const filt = `<div class="filters" role="group" aria-label="Filter results">${keys.map(k =>
+      `<button data-filter="${k}" aria-pressed="${k === regFilter}">${k === 'all' ? 'All' : RES[k][0]}</button>`).join('')}</div>`;
+    const shown = rows.filter(r => regFilter === 'all' || r.result === regFilter)
+      .sort((a, b) => a.name.localeCompare(b.name) || a.skill.localeCompare(b.skill));
+    const chipCls = k => RES[k][1] === 'acc' ? '' : RES[k][1];
+    const tbody = shown.map(r => `<tr><td>${P[r.name] ? `<button data-person="${esc(r.name)}" data-skill="${esc(r.skill)}">${esc(r.name)}</button>` : esc(r.name)}</td>
+      <td>${esc(r.skill)}</td><td><span class="chip ${chipCls(r.result)}">${RES[r.result][0]}</span></td>
+      <td>${r.level ? lvl({ level: r.level }) : ''}</td></tr>`).join('');
+    document.getElementById('v-register').innerHTML = `
+      <div class="section-head"><h2>2024 register vs the evidence</h2></div>
+      <p class="muted" style="margin-bottom:16px;max-width:70ch">Each person filled in the HR register in October 2024. This checks every entry against the work seen from July to September 2026, and lists skills the evidence shows that nobody wrote down.</p>
+      <div class="counts">${counts}</div>${filt}
+      <div class="scroll"><table class="plain"><thead><tr><th>Person</th><th>Skill</th><th>Result</th><th>Level found</th></tr></thead><tbody>${tbody}</tbody></table></div>`;
+  }
+
+  /* ---------- Sources ---------- */
+  function renderSources() {
+    const c = D.counts;
+    const w = Object.entries(D.privacy.withheldMessages).map(([id, why]) => `<tr><td class="mono">${id}</td><td>${esc(why)}</td></tr>`).join('');
+    const rk = D.rahulK.map(r => `<tr><td class="mono">${r.id}</td><td>${fmtDate(r.timestamp)}</td><td><b>${esc(r.person)}</b></td><td class="muted">${esc(r.reason)}</td></tr>`).join('');
+    document.getElementById('v-sources').innerHTML = `
+      <div class="counts">
+        <div class="panel count acc"><b>${c.notes}</b><span class="muted" style="font-size:.85rem">Project notes</span></div>
+        <div class="panel count acc"><b>${c.messagesRead}</b><span class="muted" style="font-size:.85rem">Chat messages used</span></div>
+        <div class="panel count warn"><b>${c.withheld}</b><span class="muted" style="font-size:.85rem">Messages withheld</span></div>
+        <div class="panel count bad"><b>0</b><span class="muted" style="font-size:.85rem">#random messages read</span></div>
+      </div>
+      <div class="two">
+        <div class="panel"><h2>The rules it follows</h2><ul class="bullets">
+          <li>Strongest first: project notes, then chat showing real work, then what people say about themselves, then the 2024 register.</li>
+          <li>Level 3 means led, reviewed or trained others. Level 2 means did it independently. Level 1 means learning or helped.</li>
+          <li>High confidence needs a project note. Medium needs two or more chat messages. Anything else is Low.</li>
+          <li>Jokes, boasts and enthusiasm are not evidence. Asking how to do something is level 1 at most.</li>
+          <li>Availability comes only from the status column in people.csv.</li>
+          <li>Every skill cites a message id or a note. The build stops if any reference is missing, private or in #random.</li></ul></div>
+        <div class="panel"><h2>What it leaves out</h2><ul class="bullets">
+          <li>The #random channel is never read.</li>
+          <li>Messages about health, family, leave, workload, feelings or HR conversations keep their id but not their text.</li>
+          <li>It makes no judgement of personality or performance.</li></ul>
+          <div class="scroll" style="margin-top:14px;box-shadow:none"><table class="plain"><thead><tr><th>Id</th><th>Why withheld</th></tr></thead><tbody>${w}</tbody></table></div></div>
+      </div>
+      <div class="panel"><h2>Judgement calls</h2><ul class="bullets">${D.brief.assumptions.map(a => `<li>${esc(a)}</li>`).join('')}</ul></div>
+      <div class="panel"><h2>Which Rahul K.?</h2><p class="muted" style="margin:6px 0 14px">Rahul Kapoor joined on 7 September 2026. Every "Rahul K." message is assigned below, with the reason.</p>
+        <div class="scroll" style="box-shadow:none"><table class="plain"><thead><tr><th>Id</th><th>Date</th><th>Person</th><th>Why</th></tr></thead><tbody>${rk}</tbody></table></div></div>
+      <div class="panel"><h2>Project notes</h2><ul class="bullets">${Object.keys(D.notes).sort().map(f => `<li class="mono">${esc(f)}</li>`).join('')}</ul></div>
+      <p class="muted" style="font-size:.82rem">Built ${esc(D.builtOn)} by build.py from people.csv, skills_register.csv, team_chat.csv and project_notes/. All people, clients and messages are invented.</p>`;
+  }
+
+  /* ---------- Health check ---------- */
+  const PROOF = ['led', 'did', 'reviewed', 'taught', 'learning'];
+  function liveChecks() {
+    const out = [];
+    const add = (name, ok, detail, warn) => out.push({ name, ok, detail, warn: !!warn });
+    const allEv = D.people.flatMap(p => p.skills.flatMap(x => x.evidence.map(e => ({ p, x, e }))).concat(p.flags.map(e => ({ p, e }))));
+    const skillNames = D.groups.flatMap(([, s]) => s);
+    add('Data loaded into the page', D.people.length === 25 && Object.keys(D.messages).length > 0,
+      `${D.people.length} people, ${Object.keys(D.messages).length} messages, ${Object.keys(D.notes).length} notes`);
+    add('Exactly the 20 README skills', skillNames.length === 20 && new Set(skillNames).size === 20, `${skillNames.length} skills in 5 groups`);
+    const missing = allEv.filter(({ e }) => e.ref.endsWith('.md') ? !(e.ref in D.notes) : !(e.ref in D.messages));
+    add('Every evidence link opens a real message or note', missing.length === 0,
+      missing.length ? 'Broken: ' + missing.map(m => m.e.ref).join(', ') : `${allEv.length} links checked`);
+    const rnd = Object.values(D.messages).filter(m => m.channel === 'random');
+    add('No #random messages in the page', rnd.length === 0, `${rnd.length} found`);
+    const priv = allEv.filter(({ e }) => D.messages[e.ref] && D.messages[e.ref].withheld);
+    const privText = Object.values(D.messages).filter(m => m.withheld && m.text);
+    add('Private messages are never cited and show no text', priv.length === 0 && privText.length === 0,
+      `${Object.keys(D.privacy.withheldMessages).length} withheld; ${priv.length} cited, ${privText.length} with text`);
+    const noProof = D.people.flatMap(p => p.skills.filter(x => x.level && !x.evidence.some(e => PROOF.includes(e.kind))).map(x => p.name + ' / ' + x.skill));
+    add('Every level has at least one piece of proof', noProof.length === 0, noProof.length ? noProof.join(', ') : 'Claims alone never give a level');
+    const badLevel = D.people.flatMap(p => p.skills.filter(x => x.level !== null && ![1, 2, 3].includes(x.level)));
+    add('Levels are 1, 2 or 3 only', badLevel.length === 0, `${D.people.reduce((n, p) => n + p.skills.filter(x => x.level).length, 0)} levels checked`);
+    const KL = { led: 3, reviewed: 3, taught: 3, did: 2, learning: 1 };
+    const lvWrong = D.people.flatMap(p => p.skills.filter(x => {
+      const l = x.evidence.filter(e => e.kind in KL).map(e => e.helped ? 1 : KL[e.kind]);
+      return (l.length ? Math.max(...l) : null) !== x.level;
+    }).map(x => p.name + ' / ' + x.skill));
+    add('Every level follows the rule (led, reviewed or taught = 3; did = 2; learning or helped = 1)', lvWrong.length === 0, lvWrong.length ? lvWrong.join(', ') : 'Recalculated in your browser');
+    const confWrong = D.people.flatMap(p => p.skills.filter(x => x.level).filter(x => {
+      const pr = x.evidence.filter(e => PROOF.includes(e.kind));
+      const want = pr.some(e => e.ref.endsWith('.md')) ? 'High' : new Set(pr.map(e => e.ref)).size >= 2 ? 'Medium' : 'Low';
+      return want !== x.confidence;
+    }).map(x => p.name + ' / ' + x.skill));
+    add('Confidence follows the rule (note = High, 2+ messages = Medium)', confWrong.length === 0, confWrong.length ? confWrong.join(', ') : 'Recalculated in your browser');
+    const rk = Object.values(D.messages).filter(m => m.author === 'Rahul K.');
+    const unmapped = rk.filter(m => !D.rahulK.some(r => r.id === m.id && r.person));
+    const early = D.rahulK.filter(r => r.timestamp < '2026-09-07' && r.person !== 'Rahul Kumar');
+    add('Every "Rahul K." message is assigned, and all before 7 Sept are Rahul Kumar', unmapped.length === 0 && early.length === 0, `${rk.length} messages: ${D.rahulK.filter(r => r.person === 'Rahul Kumar').length} Kumar, ${D.rahulK.filter(r => r.person === 'Rahul Kapoor').length} Kapoor`);
+    const availWrong = D.people.filter(p => p.available !== (p.status === 'Active'));
+    add('Availability comes only from people.csv status', availWrong.length === 0, `${D.people.filter(p => !p.available).map(p => p.name).join(', ') || 'Nobody'} on leave`);
+    const views = ['finder', 'matrix', 'register', 'sources'].filter(v => !document.getElementById('v-' + v).innerHTML.trim());
+    add('All tabs have content', views.length === 0, views.length ? 'Empty: ' + views.join(', ') : 'Team finder, Skills matrix, Register check, What it reads');
+    add('Evidence pop-up is available', typeof HTMLDialogElement === 'function' && typeof dlg.showModal === 'function', 'Click any name or matrix cell');
+    D.needs.forEach(n => {
+      const c = ranked(n.skill).filter(r => r.p.available).length;
+      add(`Halcyon need covered: ${n.need}`, c > 0, c === 1 ? 'Only one person: no backup' : `${c} people with evidence`, c === 1);
+    });
+    return out;
+  }
+  let sheetPerson = '';
+  function sheetRows(p) {
+    return p.skills.map(x => ({ skill: x.skill, level: x.level ? `${x.level} (${LV[x.level]})` : (x.status === 'contradicted' ? 'Contradicted' : 'Claimed only'),
+      conf: x.confidence || '', refs: x.evidence.map(e => e.ref).join(', '), why: why(x) }));
+  }
+  function sheetText(p) {
+    return `${p.name} (chat name: ${p.chatName})\nSkill | Level your tool gave | Confidence | Why the tool gave it | All evidence\n` +
+      sheetRows(p).map(r => `${r.skill} | ${r.level} | ${r.conf} | ${r.why.word}: ${r.why.text} (${r.why.ref}) | ${r.refs}`).join('\n');
+  }
+  function renderSheet() {
+    const p = P[sheetPerson];
+    const box = document.getElementById('sheet-out');
+    if (!p) { box.innerHTML = '<p class="muted">Choose a person to see everything the tool gave them.</p>'; return; }
+    const rows = sheetRows(p).map(r => `<tr><td><b>${esc(r.skill)}</b></td><td>${esc(r.level)}</td><td>${esc(r.conf)}</td>
+      <td><div class="why-line"><b>${esc(r.why.word)}</b> ${esc(r.why.text)} <span class="mono muted">${esc(r.why.ref)}</span></div></td>
+      <td class="mono">${esc(r.refs)}</td><td class="blank">You decide</td></tr>`).join('');
+    box.innerHTML = `<div class="scroll" style="box-shadow:none"><table class="plain"><thead><tr><th>Skill</th><th>Level your tool gave</th><th>Confidence</th><th>Why the tool gave it</th><th>All evidence</th><th>Verdict</th></tr></thead>
+      <tbody>${rows || '<tr><td colspan="6" class="muted">The tool gave this person no skills.</td></tr>'}</tbody></table></div>
+      <p class="muted" style="font-size:.85rem;margin-top:10px">Open each reference, check it against the level rules, and look in the chat and notes for skills the tool missed. The verdicts are yours.</p>
+      ${sourceView(p)}`;
+  }
+
+  /* Side-by-side sources: everything needed to judge one person, without opening the CSV. */
+  function sourceView(p) {
+    const first = p.name.split(' ')[0];
+    const ambiguous = D.people.filter(q => q.name.split(' ')[0] === first).length > 1;
+    const hl = s => esc(s).replace(new RegExp(`\\b(${first}|${p.name.split(' ')[1]})\\b`, 'g'), '<mark>$1</mark>');
+    const msgLi = (m, extra = '') => `<li><div class="meta"><span class="mono">${esc(m.id)}</span><br>${fmtDate(m.timestamp)} · #${esc(m.channel)}${extra}</div>
+      <div class="quote"><b>${esc(m.author)}</b>: ${hl(m.text)}</div></li>`;
+    const noteLines = (f) => D.notes[f].split('\n').filter(l => l.includes(p.name) || (!ambiguous && l.includes(first))).map(l => l.replace(/\*\*/g, '').replace(/^- /, '').trim()).filter(Boolean);
+    const cited = new Set(p.skills.flatMap(x => x.evidence.map(e => e.ref)).concat(p.flags.map(e => e.ref)));
+
+    // 1. Each skill with the full text of every source it used
+    const perSkill = p.skills.map(x => {
+      const items = x.evidence.map(e => {
+        const k = e.helped ? 'Helped' : (KIND[e.kind] || [e.kind])[0];
+        if (e.ref.endsWith('.md')) {
+          const lines = noteLines(e.ref);
+          return `<li><div class="meta">Project note<br><span class="chip plain">${esc(k)}</span></div><div class="quote"><span class="mono">${esc(e.ref)}</span>
+            ${lines.map(l => `<div style="margin-top:4px">${hl(l)}</div>`).join('')}
+            <details style="border:0;margin-top:4px"><summary style="padding:0;font-weight:400;color:var(--accent);font-size:.85rem">Read the whole note</summary><pre style="white-space:pre-wrap;font:.8rem/1.5 var(--f-mono);background:var(--surface-2);padding:10px;border-radius:8px">${esc(D.notes[e.ref])}</pre></details></div></li>`;
+        }
+        const m = D.messages[e.ref];
+        return m ? msgLi(m, `<br><span class="chip plain">${esc(k)}</span>`) : '';
+      }).join('');
+      const lvlTxt = x.level ? `${x.level} (${LV[x.level]})` : (x.status === 'contradicted' ? 'Contradicted' : 'Claimed only');
+      return `<details><summary>${esc(x.skill)} <span class="muted">Tool gave: ${esc(lvlTxt)} · ${x.evidence.length} source${x.evidence.length > 1 ? 's' : ''}</span></summary><ul class="src-list">${items}</ul></details>`;
+    }).join('');
+
+    // 2. Their own messages the tool did not use
+    const own = Object.values(D.messages).filter(m => m.person === p.name && !m.withheld && !cited.has(m.id));
+    // 3. Other people's messages that mention them, not used
+    const mentions = Object.values(D.messages).filter(m => m.person !== p.name && !m.withheld && !cited.has(m.id) && new RegExp(`\\b${first}\\b`).test(m.text));
+    // 4. Project-note lines about them in notes the tool did not cite
+    const otherNotes = Object.keys(D.notes).sort().filter(f => !cited.has(f) && noteLines(f).length);
+
+    const ownBlock = `<details><summary>Their other messages <span class="muted">${own.length} not used by the tool: look here for missed skills</span></summary>
+      <ul class="src-list">${own.map(m => msgLi(m)).join('') || '<li><span class="muted">None. The tool used every message they wrote.</span></li>'}</ul></details>`;
+    const menBlock = `<details><summary>Others mentioning "${esc(first)}" <span class="muted">${mentions.length} not used${ambiguous ? ` · two people are called ${esc(first)}, so check which one is meant` : ''}</span></summary>
+      <ul class="src-list">${mentions.map(m => msgLi(m)).join('') || '<li><span class="muted">None.</span></li>'}</ul></details>`;
+    const noteBlock = `<details><summary>Project notes not cited <span class="muted">${otherNotes.length === 1 ? '1 note mentions' : otherNotes.length + ' notes mention'} them</span></summary>
+      <ul class="src-list">${otherNotes.map(f => `<li><div class="meta">Project note</div><div class="quote"><span class="mono">${esc(f)}</span>${noteLines(f).map(l => `<div style="margin-top:4px">${hl(l)}</div>`).join('')}</div></li>`).join('') || '<li><span class="muted">None. Every note that mentions them was used.</span></li>'}</ul></details>`;
+    const withheld = Object.values(D.messages).filter(m => m.person === p.name && m.withheld).length;
+
+    return `<div class="srcview">
+      <h3>Sources side by side</h3>
+      <div class="rule-box"><span><b>3</b> led, reviewed or trained others</span><span><b>2</b> did it independently</span><span><b>1</b> learning or helped</span>
+        <span>Talk, jokes and boasts are not evidence</span><span>Asking how = 1 at most</span></div>
+      ${perSkill}${ownBlock}${menBlock}${noteBlock}
+      <p class="muted" style="font-size:.82rem">${withheld ? `${withheld} of their messages are private and not shown. ` : ''}#random is never shown. Notes about other people are left out.</p>
+    </div>`;
+  }
+  function renderHealth() {
+    const live = liveChecks();
+    const fails = live.filter(c => !c.ok).length + D.buildChecks.filter(c => !c.ok).length;
+    const warns = live.filter(c => c.ok && c.warn).length;
+    const total = live.length + D.buildChecks.length;
+    const pill = document.getElementById('status-pill');
+    pill.className = 'status-pill ' + (fails ? 'bad' : 'ok');
+    pill.textContent = fails ? `${fails} check${fails > 1 ? 's' : ''} failed` : `All ${total} checks passed`;
+    const li = c => `<li><span class="tick ${!c.ok ? 'bad' : c.warn ? 'warn' : 'ok'}">${!c.ok ? '✕' : c.warn ? '!' : '✓'}</span><span>${esc(c.name)}<small>${esc(c.detail)}</small></span></li>`;
+    const opts = D.people.map(p => `<option value="${esc(p.name)}" ${p.name === sheetPerson ? 'selected' : ''}>${esc(p.name)} (${esc(p.chatName)})</option>`).join('');
+    document.getElementById('v-health').innerHTML = `
+      <div class="panel verdict"><span class="big ${fails ? 'bad' : 'ok'}">${fails ? '✕' : '✓'}</span>
+        <div><h2>${fails ? `${fails} of ${total} checks failed` : `Working: all ${total} checks passed`}</h2>
+        <p class="muted" style="margin-top:4px">${D.buildChecks.length} checks ran when the page was built, and ${live.length} ran just now in your browser.${warns ? ` ${warns} warning${warns > 1 ? 's' : ''} below: the site works, but the bid is thin there.` : ''}</p></div></div>
+      <div class="two">
+        <div class="panel"><h2>Build checks</h2><p class="muted" style="font-size:.85rem;margin-top:4px">Run by build.py against the source files. The build stops if any fail.</p><ul class="checks">${D.buildChecks.map(li).join('')}</ul></div>
+        <div class="panel"><h2>Live checks</h2><p class="muted" style="font-size:.85rem;margin-top:4px">Run again in this browser every time the page opens.</p><ul class="checks">${live.map(li).join('')}</ul></div>
+      </div>
+      <div class="panel"><h2>Check a person</h2>
+        <p class="muted" style="margin-top:4px">Everything the tool gave one person, with its evidence, laid out like a verification sheet.</p>
+        <div class="sheet-bar"><label class="label" for="sheet-person">Person</label>
+          <select id="sheet-person"><option value="">Choose…</option>${opts}</select>
+          <button id="sheet-copy" type="button">Copy as text</button><span class="done" id="sheet-done" aria-live="polite"></span></div>
+        <div id="sheet-out"></div></div>`;
+    renderSheet();
+    document.getElementById('sheet-person').addEventListener('change', e => { sheetPerson = e.target.value; renderSheet(); });
+    document.getElementById('sheet-copy').addEventListener('click', () => {
+      const p = P[sheetPerson], done = document.getElementById('sheet-done');
+      if (!p) { done.textContent = 'Choose a person first.'; return; }
+      const text = sheetText(p);
+      const fallback = () => {
+        let ta = document.querySelector('#sheet-out textarea.copy');
+        if (!ta) { ta = document.createElement('textarea'); ta.className = 'copy'; ta.readOnly = true; document.getElementById('sheet-out').appendChild(ta); }
+        ta.value = text; ta.focus(); ta.select(); done.textContent = 'Selected below: press Ctrl+C to copy.';
+      };
+      try { navigator.clipboard.writeText(text).then(() => { done.textContent = 'Copied.'; }, fallback); } catch (err) { fallback(); }
+    });
+  }
+
+  /* ---------- Evidence dialog ---------- */
+  const dlg = document.getElementById('dlg');
+  function evItem(e) {
+    const k = e.helped ? ['Helped', 'plain'] : (KIND[e.kind] || [e.kind, 'plain']);
+    if (e.ref.endsWith('.md')) {
+      return `<li><div class="src">Project note</div><div><span class="chip ${k[1]}">${k[0]}</span> ${esc(e.note)}
+        <details><summary class="mono">${esc(e.ref)}</summary><pre>${esc(D.notes[e.ref] || '')}</pre></details></div></li>`;
+    }
+    const m = D.messages[e.ref] || {};
+    return `<li><div class="src"><span class="mono">${esc(e.ref)}</span><br>${m.timestamp ? fmtDate(m.timestamp) : ''} · #${esc(m.channel)}</div>
+      <div><span class="chip ${k[1]}">${k[0]}</span> ${esc(e.note)}<blockquote><b>${esc(m.author)}</b>: ${esc(m.text)}</blockquote></div></li>`;
+  }
+  function openPerson(name, focus) {
+    const p = P[name]; if (!p) return;
+    document.getElementById('dlg-title-wrap').innerHTML = `<div style="display:flex;gap:14px;align-items:center">${av(p.name)}<div>
+      <div class="label">${esc(p.team)} · ${esc(p.role)}</div><h2 id="dlg-title">${esc(p.name)}</h2></div></div>
+      <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:10px"><span class="chip ${p.available ? 'ok' : 'warn'}">${esc(p.status)}</span>${personTags(p).replace('<span class="chip warn">On leave</span>', '')}</div>`;
+    const skills = [...p.skills].sort((a, b) => (b.skill === focus) - (a.skill === focus) || score(b) - score(a));
+    const blocks = skills.map(x => `<section class="skill-block ${x.skill === focus ? 'focus' : ''}"><header><h3>${esc(x.skill)}</h3>
+      ${x.level ? `${meter(x.level)}<span class="chip plain">${LV[x.level]} · ${x.confidence} confidence</span>` : `<span class="chip ${x.status === 'contradicted' ? 'bad' : 'warn'}">${x.status === 'contradicted' ? 'Contradicted' : 'Claimed only'}</span>`}</header>
+      <p class="why-box"><b>Why:</b> ${esc(whyText(x))}</p>
+      <ul class="ev">${x.evidence.map(evItem).join('')}</ul></section>`).join('');
+    const flags = p.flags.length ? `<section class="skill-block"><header><h3>Flags</h3></header><ul class="ev">${p.flags.map(evItem).join('')}</ul></section>` : '';
+    const qs = p.questions.length ? `<section class="skill-block"><header><h3>Open questions</h3></header><ul class="bullets">${p.questions.map(q => `<li>${esc(q)}</li>`).join('')}</ul></section>` : '';
+    document.getElementById('dlg-body').innerHTML = (blocks || '<p class="muted">No evidence of any of the 20 tracked skills in the notes or chat.</p>') + flags + qs;
+    dlg.showModal(); dlg.scrollTop = 0;
+  }
+  document.getElementById('dlg-close').addEventListener('click', () => dlg.close());
+  dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });
+  document.addEventListener('click', e => {
+    const f = e.target.closest('[data-filter]');
+    if (f) { regFilter = f.dataset.filter; renderRegister(); return; }
+    const t = e.target.closest('[data-person]');
+    if (t) { e.preventDefault(); openPerson(t.dataset.person, t.dataset.skill); }
+  });
+
+  /* ---------- Tabs ---------- */
+  const VIEWS = ['finder', 'matrix', 'register', 'sources', 'health'];
+  function show(v) {
+    if (!VIEWS.includes(v)) v = 'finder';
+    VIEWS.forEach(k => { document.getElementById('v-' + k).hidden = k !== v; });
+    document.querySelectorAll('nav.tabs a').forEach(a => a.setAttribute('aria-current', a.getAttribute('href') === '#' + v ? 'page' : 'false'));
+  }
+  document.querySelectorAll('nav.tabs a').forEach(a => a.addEventListener('click', e => {
+    e.preventDefault();
+    const v = a.getAttribute('href').slice(1);
+    show(v);
+    try { history.replaceState(null, '', '#' + v); } catch (err) { /* some previews block this */ }
+  }));
+  document.getElementById('status-pill').addEventListener('click', e => {
+    e.preventDefault(); show('health');
+    try { history.replaceState(null, '', '#health'); } catch (err) { /* some previews block this */ }
+    document.getElementById('v-health').scrollIntoView({ behavior: 'smooth' });
+  });
+  renderFinder(); renderMatrix(); renderRegister(); renderSources(); renderHealth(); show(location.hash.slice(1));
+  window.addEventListener('hashchange', () => show(location.hash.slice(1)));
+
+  /* ---------- Sonar rings in the hero (decorative, static when reduced motion) ---------- */
+  const cv = document.getElementById('sonar'), ctx = cv.getContext('2d');
+  const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function draw(t) {
+    const r = cv.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+    if (cv.width !== Math.round(r.width * dpr)) { cv.width = Math.round(r.width * dpr); cv.height = Math.round(r.height * dpr); }
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, r.width, r.height);
+    const cx = r.width * .86, cy = r.height * .18, max = Math.max(r.width, r.height) * .7;
+    for (let i = 0; i < 6; i++) {
+      const p = ((t / 9000) + i / 6) % 1, rad = p * max;
+      ctx.beginPath(); ctx.arc(cx, cy, rad, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(111,224,210,${(1 - p) * .35})`; ctx.lineWidth = 1.2; ctx.stroke();
+    }
+    if (!still) requestAnimationFrame(draw);
+  }
+  try { draw(still ? 2500 : performance.now()); } catch (e) { /* decorative only */ }
+})();
+</script>
